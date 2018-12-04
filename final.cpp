@@ -40,59 +40,17 @@ bool ehSimples(vector <int> &path){
     return true;
 }
 
-void concatenate(const pair<int,int>& s, const int d, vector<vector<list<pair<int,int> > > > &pontos, bool otimizou=false) {
-    if(d == -1) {
-        list<pair<int,int> > dummy;
-        dummy.push_front(s);
-        pontos[s.first].push_back(dummy);
-        auto it3=dummy.begin();
-        it3++;
-        while(it3!=dummy.end()) { 
-            dummy.erase(it3);
-            it3 = dummy.begin();
-            it3++;
-        }
-    }
-    else {
-        for(int i=0; i<pontos[d].size(); i++) {
-            list<pair<int,int> > dummy;
-            dummy.push_front(s);
-            dummy.insert(dummy.end(), pontos[d][i].begin(), pontos[d][i].end());
-            pontos[s.first].push_back(dummy);
-            
-            auto it3=dummy.begin();
-            it3++;
-            while(it3!=dummy.end()) { 
-                dummy.erase(it3);
-                it3 = dummy.begin();
-                it3++;
-            }
-        }
-    }
-}
-
 //Funcao recursiva que encontra e imprime os caminhos 's'(start) para 'd'(destino). 
 // path[] guarda os vértice no caminho e path_index eh o vert atual no caminho 
-void AcharCaminhosRecur(const pair<int,int>& s, int d, vector<bool> &visitados, vector<bool>& taNumCaminho,
-    list<pair<int,int> >& path, int &path_index, vector < vector<pair<int,int> > > &listadj, vector<vector<list<pair<int,int> > > > &pontos) { 
+void AcharCaminhosRecur(const pair<int,int>& s, int d, vector<bool> &visitados, vector<bool>& taNumCaminho, vector < vector<pair<int,int> > > &listadj, vector<int> &eNumCaminho) { 
     //visita o vertice atual e o coloca no caminho
     visitados[s.first] = true; 
-    path.push_back(s); 
-    path_index++; 
     //Se chegou no destino checa se eh simples, se for imprime se nao continua
     // cerr << s.first << " piroca " << d << " via " << s.second << "\n";
     if (s.first==d){ 
         // cerr<<"ASDF\n";
         taNumCaminho[s.first] = true;
-        auto it2 = path.crbegin(); 
-        for(; *it2 != s; it2++);
-        it2--;
-        if(it2 == path.crend()) {
-            concatenate(s, -1, pontos);
-        }
-        else {
-            concatenate(s,(*it2).first,pontos);
-        }
+        eNumCaminho.push_back(s.second);
     } 
     else { //Se nao chegou no destino continua a dfs  
         for (int i = 0; i < listadj[s.first].size(); i++) 
@@ -100,68 +58,51 @@ void AcharCaminhosRecur(const pair<int,int>& s, int d, vector<bool> &visitados, 
                 if(taNumCaminho[listadj[s.first][i].first]) {
                     // cerr<<"Otimizou\n";
                     //pontos[listadj[s.first][i].first];
-                    auto k = listadj[s.first][i];
+                    // auto k = listadj[s.first][i];
 
-                    for(int j=0; j<pontos[k.first].size(); j++) {
-                        (*pontos[k.first][j].begin()).second = k.second;
-                    }
+                    // for(int j=0; j<pontos[k.first].size(); j++) {
+                    //     (*pontos[k.first][j].begin()).second = k.second;
+                    // }
 
                     taNumCaminho[s.first] = true;
-                    auto it2 = path.crbegin(); 
-                    for(; *it2 != s; it2++);
-                    it2--;
-                    if(it2 == path.crend()) {
-                        concatenate(s, k.first, pontos,true);
-                    }
-                    else {
-                        concatenate(s,(*it2).first,pontos,true);
-                    }
+                    eNumCaminho.push_back(s.second);
                 }
                 else {
-                    AcharCaminhosRecur(listadj[s.first][i], d, visitados, taNumCaminho, path, path_index, listadj, pontos); 
+                    AcharCaminhosRecur(listadj[s.first][i], d, visitados, taNumCaminho, listadj, eNumCaminho); 
                     if(taNumCaminho[listadj[s.first][i].first]) {
                         taNumCaminho[s.first] = true;
-                        concatenate(s,listadj[s.first][i].first,pontos);
+                        eNumCaminho.push_back(s.second);
                     }
                 }
             }
     }
-
-    
-  
     //retira o vertice do caminho e "desvisita"
-    path_index--;
-    path.pop_back();
     visitados[s.first] = false; 
 } 
 
 void AcharCaminhos(int s, int d, int nVertices, vector<vector<pair<int,int> > > &listadj, vector<int>& vAnswer, vector<int>& eAnswer) { 
     vector <bool> visitados (nVertices,false);
     vector <bool> taNumCaminho (nVertices,false); 
-    list<pair<int,int> > path;
-    int path_index = 0; 
-    vector<vector<list<pair<int,int> > > > pontoss(nVertices);
+    vector<int> eNumCaminho;
     pair<int,int> start(s,-1);
-    AcharCaminhosRecur(start, d, visitados, taNumCaminho, path, path_index, listadj, pontoss);
+    AcharCaminhosRecur(start, d, visitados, taNumCaminho, listadj, eNumCaminho);
     /*
     for(int i=0; i<pontoss.size(); i++) {
         cout << i << "-" << pontoss[i].size() << " ";
     } */
-    for(int i=0; i<pontoss[s].size(); i++) {
+    for(int i=0; i<taNumCaminho.size(); i++) {
         //cout << i+1 << ": ";
-        auto it=pontoss[s][i].cbegin();
-        vAnswer.push_back((*it).first);
-        it++;
-        for(; it!=pontoss[s][i].cend(); it++) {
-            vAnswer.push_back((*it).first);
-            eAnswer.push_back((*it).second);
-        }
+        if(taNumCaminho[i])
+            vAnswer.push_back(i);
+    }
+    for(int i=0; i<eNumCaminho.size(); i++) {
+        eAnswer.push_back(eNumCaminho[i]);
     }
 }
 
 int main() {
-    ifstream ifs("../CasosDeTeste/EsriNapervilleElectricNetwork/EsriNapervilleElectricNetwork.json");
-    // ifstream ifs("../CasosDeTeste/grafo_111KV_1ME/data.txt");
+    // ifstream ifs("../CasosDeTeste/EsriNapervilleElectricNetwork/EsriNapervilleElectricNetwork.json");
+    ifstream ifs("../CasosDeTeste/wupstream/patherdosrenyi_10_500/network.json");
     // ifstream ifs("SampleDataset1/SampleDataset1.json");
     Json::Reader reader;
     Json::Value obj;
@@ -189,9 +130,6 @@ int main() {
         itV = vertexCode.insert(make_pair(to,vertexCode.size()));
         if(itV.second)
             vertexName.insert(make_pair(vertexCode.size()-1,to));
-        
-        //cerr << from << " " << vertexCode[from] << "\n";
-        //cerr << to << " " << vertexCode[to] << "\n";
 
         adjList.resize(vertexCode.size());
 
@@ -200,17 +138,15 @@ int main() {
 
         if(it.second) {
             edgeName.insert(make_pair(i-repetidasName.size(),via));
-            //cerr << via << " " << i << "\n";
         }
         else {
-            //cerr << via << " " << repetidasName.size() << "\n";
             repetidasName.insert(make_pair(repetidasName.size(),via));
         }
         
     }
     //cerr << "acabou de ler" << endl;
-    ifstream start("../CasosDeTeste/EsriNapervilleElectricNetwork/startingpoints.txt");
-    // ifstream start("../CasosDeTeste/grafo_111KV_1ME/startingPoints.txt");
+    // ifstream start("../CasosDeTeste/EsriNapervilleElectricNetwork/startingpoints.txt");
+    ifstream start("../CasosDeTeste/wupstream/patherdosrenyi_10_500/start.txt");
     // ifstream start("SampleDataset1/startingpoints.txt");
     vector<int> startingPoints; string startingPoint;
     
@@ -222,7 +158,6 @@ int main() {
             startingPoints.push_back(vertexCode[startingPoint]);
         else {
             string artificial = "artificial";
-            //artificial += (char)artificiais;
             vertexName.insert(make_pair(vertexCode.size(),startingPoint));
             vertexCode.insert(make_pair(artificial,vertexCode.size()));
 
@@ -267,7 +202,7 @@ int main() {
     // cout << "\n";
 
     const Json::Value& controllers = obj["controllers"]; // array of controllers
-    //cout << controllers.size() << " ";
+    cerr << controllers.size() << " cont" << endl;
     vector<int> end(controllers.size());
     for (int i = 0; i < controllers.size(); i++){
         to = controllers[i]["globalId"].asString();
@@ -289,13 +224,13 @@ int main() {
     if(true) {
         for(int i=0; i<vAnswer.size(); i++) {
             //if(vertexName[vAnswer[i]] == "artificial")
+            // cout << vAnswer[i] << " " << vertexName[vAnswer[i]] << "\n";
             cout << vertexName[vAnswer[i]] << "\n";
         }
-        //cout << "\n";
         for(int i=0; i<eAnswer.size(); i++) {
             if(eAnswer[i]<edgeName.size())
             cout << edgeName[eAnswer[i]] << "\n";
-            
+            // cout << eAnswer[i] << " " << edgeName[eAnswer[i]] << "\n";
             /*
             auto it = vertexCode.find(read);
             if(it != vertexCode.cend()) 
