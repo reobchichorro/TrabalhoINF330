@@ -134,14 +134,14 @@ void AcharCaminhos(int s, int d, int nVertices, vector<vector<pair<int,int> > > 
         cout << i << "-" << pontoss[i].size() << " ";
     } */
     for(int i=0; i<pontoss[s].size(); i++) {
-        cout << i+1 << ": ";
+        //cout << i+1 << ": ";
         auto it=pontoss[s][i].cbegin();
-        cout << (*it).first << " -";
+        cout << (*it).first << "\n";
         it++;
         for(; it!=pontoss[s][i].cend(); it++) {
-            cout << (*it).second << "- " << (*it).first << " -";
+            cout << (*it).second << "-\n" << (*it).first << "\n";
         }
-        cout << "\n";
+        //cout << "\n";
     }
 } 
   

@@ -12,15 +12,15 @@ struct Edge
 };
 
 int main() {
-    ifstream ifs("../CasosDeTeste/grafo_111KV_1ME/data.txt");
-    // ifstream ifs("SampleDataset1/SampleDataset1.json");
+    // ifstream ifs("../CasosDeTeste/grafo_111KV_1ME/data.txt");
+    ifstream ifs("SampleDataset1/SampleDataset1.json");
     Json::Reader reader;
     Json::Value obj;
     reader.parse(ifs, obj); // reader can also read strings
     const Json::Value& rows = obj["rows"]; // array of rows
-    map<string,int> aresss, vertexxx;
-    vector<Edge> arestas, repeated;
-    map<int,string> repetidas;
+    map<string,int> edgeCode, vertexCode;
+    map<int,string> edgeName, vertexName;
+    map<int,string> repetidasName;
 
     vector<vector<pair<int,int> > > adjList;
 
@@ -32,39 +32,47 @@ int main() {
         from = rows[i]["fromGlobalId"].asString();
         to = rows[i]["toGlobalId"].asString();
 
-        auto it = aresss.insert(make_pair(via,i));
-        vertexxx.insert(make_pair(from,vertexxx.size()));
-        vertexxx.insert(make_pair(to,vertexxx.size()));
+        auto it = edgeCode.insert(make_pair(via,i));
+        vertexCode.insert(make_pair(from,vertexCode.size()));
+        vertexCode.insert(make_pair(to,vertexCode.size()));
         
-        adjList.resize(vertexxx.size());
+        //cerr << from << " " << vertexCode[from] << "\n";
+        //cerr << to << " " << vertexCode[to] << "\n";
 
-        adjList[vertexxx[from]].push_back(make_pair(vertexxx[to],aresss[via]));
-        adjList[vertexxx[to]].push_back(make_pair(vertexxx[from],aresss[via]));
+        adjList.resize(vertexCode.size());
 
-        if(it.second);
+        adjList[vertexCode[from]].push_back(make_pair(vertexCode[to],edgeCode[via]));
+        adjList[vertexCode[to]].push_back(make_pair(vertexCode[from],edgeCode[via]));
+
+        if(it.second) {
+            edgeName.insert(make_pair(i,via));
+            //cerr << via << " " << i << "\n";
+        }
         else {
-            repetidas.insert(make_pair(repetidas.size(),via));
+            //cerr << via << " " << repetidasName.size() << "\n";
+            repetidasName.insert(make_pair(repetidasName.size(),via));
         }
         
     }
 
-    ifstream start("../CasosDeTeste/grafo_111KV_1ME/startingPoints.txt");
-    // ifstream start("SampleDataset1/startingpoints.txt");
+    // ifstream start("../CasosDeTeste/grafo_111KV_1ME/startingPoints.txt");
+    ifstream start("SampleDataset1/startingpoints.txt");
     vector<int> startingPoints; string startingPoint;
     
 
     int artificiais=0;
     for(int i=0; start >> startingPoint; i++) {
-        auto it = vertexxx.find(startingPoint);
-        if(it != vertexxx.cend())
-            startingPoints.push_back(vertexxx[startingPoint]);
+        auto it = vertexCode.find(startingPoint);
+        if(it != vertexCode.cend())
+            startingPoints.push_back(vertexCode[startingPoint]);
         else {
             string artificial = "artificial";
             artificial += (char)artificiais;
-            vertexxx.insert(make_pair(artificial,vertexxx.size()));
+            vertexCode.insert(make_pair(artificial,vertexCode.size()));
+            vertexName.insert(make_pair(vertexCode.size(),artificial));
 
-            auto it = aresss.find(startingPoint);
-            startingPoints.push_back(vertexxx.size()-1);            
+            auto it = edgeCode.find(startingPoint);
+            startingPoints.push_back(vertexCode.size()-1);            
             
             int size = adjList.size();
             adjList.resize(size+artificiais+1);
@@ -76,10 +84,10 @@ int main() {
                         if(achou) adjList[j].erase(adjList[j].begin() + k);
                         else {
                             achou = true;
-                            adjList[j][k].first = vertexxx.size()-1;
-                            adjList[j][k].second = aresss.size() + artificiais;
+                            adjList[j][k].first = vertexCode.size()-1;
+                            adjList[j][k].second = edgeCode.size() + artificiais;
 
-                            adjList[vertexxx.size()-1].push_back(make_pair(j,aresss.size() + artificiais));
+                            adjList[vertexCode.size()-1].push_back(make_pair(j,edgeCode.size() + artificiais));
 
                             artificiais++; 
                         }
@@ -106,9 +114,30 @@ int main() {
     cout << controllers.size() << " ";
     for (int i = 0; i < controllers.size(); i++){
         to = controllers[i]["globalId"].asString();
-        cout << vertexxx[to] << " ";
+        cout << vertexCode[to] << " ";
     }
     cout << endl;
+
+    if(true) {
+        ifstream end("SampleDataset1/output.txt");
+        string read;
+        while(end >> read) {
+            auto it = vertexCode.find(read);
+            if(it != vertexCode.cend()) 
+                cerr << (*it).second << "\n";
+            else {
+                auto it2 = edgeCode.find(read);
+                if(it != edgeCode.cend()) 
+                    cerr << (*it2).second << " -\n";
+                else
+                    for(int i=0; i<repetidasName.size(); i++) 
+                        if(repetidasName[i] == read) {
+                            cerr << i << " -\n";
+                            repetidasName.erase(i);
+                        }
+            }
+        }
+    }
 
     return 0;
 }
