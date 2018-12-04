@@ -1,0 +1,21 @@
+17 capivaraSexy 16
+17 piroca 16 via -1
+2 piroca 16 via 15
+1 piroca 16 via 1
+0 piroca 16 via 0
+3 piroca 16 via 2
+4 piroca 16 via 3
+6 piroca 16 via 5
+12 piroca 16 via 16
+11 piroca 16 via 9
+16 piroca 16 via 9
+ASDF
+15 piroca 16 via 13
+13 piroca 16 via 15
+9 piroca 16 via 10
+10 piroca 16 via 8
+5 piroca 16 via 4
+7 piroca 16 via 6
+8 piroca 16 via 7
+Otimizou
+14 piroca 16 via 17
