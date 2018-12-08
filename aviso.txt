@@ -1,0 +1,3 @@
+Nota: para Linux, utlize o comando 
+	ulimit -s unlimited
+para remover o limite da pilha do computador, pois o código é recursivo e estoura a pilha de chamada.
